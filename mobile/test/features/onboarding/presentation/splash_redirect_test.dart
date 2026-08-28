@@ -52,6 +52,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.add), findsOneWidget);
-    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Accueil'), findsOneWidget);
   });
 }
