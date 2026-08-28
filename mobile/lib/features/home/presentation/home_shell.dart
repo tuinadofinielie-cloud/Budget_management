@@ -37,13 +37,13 @@ class HomeShell extends ConsumerWidget {
           children: [
             _NavItem(
               icon: Icons.home_rounded,
-              label: 'Home',
+              label: 'Accueil',
               isSelected: navigationShell.currentIndex == 0,
               onTap: () => navigationShell.goBranch(0),
             ),
             _NavItem(
               icon: Icons.bar_chart_rounded,
-              label: 'Stats',
+              label: 'Statistiques',
               isSelected: navigationShell.currentIndex == 1,
               onTap: () => navigationShell.goBranch(1),
             ),
@@ -56,7 +56,7 @@ class HomeShell extends ConsumerWidget {
             ),
             _NavItem(
               icon: Icons.person_rounded,
-              label: 'Profile',
+              label: 'Profil',
               isSelected: navigationShell.currentIndex == 3,
               onTap: () => navigationShell.goBranch(3),
             ),
