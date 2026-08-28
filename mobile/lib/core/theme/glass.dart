@@ -22,5 +22,5 @@ class GlassDecoration {
     );
   }
 
-  static const ImageFilter blur = ImageFilter.blur(sigmaX: 20, sigmaY: 20);
+  static final ImageFilter blur = ImageFilter.blur(sigmaX: 20, sigmaY: 20);
 }
