@@ -78,7 +78,10 @@ class AuthController extends AsyncNotifier<AuthState> {
 
   Future<void> logout() async {
     final repository = ref.read(authRepositoryProvider);
-    await repository.logout();
-    state = const AsyncData(AuthUnauthenticated());
+    try {
+      await repository.logout();
+    } finally {
+      state = const AsyncData(AuthUnauthenticated());
+    }
   }
 }
