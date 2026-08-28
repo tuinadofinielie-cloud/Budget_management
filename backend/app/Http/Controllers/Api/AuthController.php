@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\ApiResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -28,5 +30,23 @@ class AuthController extends Controller
             'user' => new UserResource($user),
             'token' => $token,
         ], 'Compte créé avec succès.', 201);
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $user = User::where('email', $request->validated('email'))->first();
+
+        if (! $user || ! Hash::check($request->validated('password'), $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['Identifiants invalides.'],
+            ]);
+        }
+
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        return $this->success([
+            'user' => new UserResource($user),
+            'token' => $token,
+        ], 'Connexion réussie.');
     }
 }
