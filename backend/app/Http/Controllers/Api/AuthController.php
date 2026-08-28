@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\UserResource;
+use App\Models\User;
+use App\Support\ApiResponse;
+use Illuminate\Support\Facades\Hash;
+
+class AuthController extends Controller
+{
+    use ApiResponse;
+
+    public function register(RegisterRequest $request)
+    {
+        $user = User::create([
+            'name' => $request->validated('name'),
+            'email' => $request->validated('email'),
+            'password' => Hash::make($request->validated('password')),
+            'currency' => 'XOF',
+        ]);
+
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        return $this->success([
+            'user' => new UserResource($user),
+            'token' => $token,
+        ], 'Compte créé avec succès.', 201);
+    }
+}
