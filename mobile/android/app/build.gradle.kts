@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.financeapp.finance_app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
