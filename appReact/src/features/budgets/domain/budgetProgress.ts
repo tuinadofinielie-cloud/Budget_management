@@ -15,16 +15,6 @@ function isSameMonth(dateIso: string, reference: Date): boolean {
   return date.getUTCFullYear() === reference.getUTCFullYear() && date.getUTCMonth() === reference.getUTCMonth();
 }
 
-function statusFor(percent: number): BudgetStatus {
-  if (percent > 100) {
-    return 'depassement';
-  }
-  if (percent >= 80) {
-    return 'attention';
-  }
-  return 'normal';
-}
-
 export function computeBudgetProgress(
   budget: AppBudget,
   transactions: AppTransaction[],
@@ -37,7 +27,9 @@ export function computeBudgetProgress(
     .reduce((total, transaction) => total + transaction.amount, 0);
 
   const remaining = budget.amount - spent;
-  const percent = Math.round((spent / budget.amount) * 100);
+  const ratio = spent / budget.amount;
+  const percent = Math.round(ratio * 100);
+  const status: BudgetStatus = ratio > 1 ? 'depassement' : ratio >= 0.8 ? 'attention' : 'normal';
 
-  return { spent, remaining, percent, status: statusFor(percent) };
+  return { spent, remaining, percent, status };
 }

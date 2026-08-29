@@ -245,7 +245,7 @@ export class AppDatabase {
   async getCachedBudgets(): Promise<CachedBudget[]> {
     await this.ready;
     return this.db.getAllAsync<CachedBudget>(
-      `SELECT id, category_id, amount, period FROM local_budgets ORDER BY id;`
+      `SELECT id, category_id, amount, period FROM local_budgets ORDER BY id DESC;`
     );
   }
 }

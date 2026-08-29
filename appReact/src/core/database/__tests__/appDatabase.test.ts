@@ -44,11 +44,37 @@ class InMemorySqliteExecutor implements SqliteExecutor {
 
   async getAllAsync<T>(sql: string): Promise<T[]> {
     const table = this.tableFromSql(sql);
-    return [...(this.tables[table]?.values() ?? [])] as T[];
+    const rows = [...(this.tables[table]?.values() ?? [])] as T[];
+    return this.applyOrderBy(rows, sql);
   }
 
   private tableFromSql(sql: string): string {
     return sql.match(/(?:FROM|INTO)\s+(\w+)/i)?.[1] ?? '';
+  }
+
+  /** Mimics SQLite's ORDER BY so tests can assert on row order without a native module. */
+  private applyOrderBy<T>(rows: T[], sql: string): T[] {
+    const match = sql.match(/ORDER BY\s+(.+?)\s*;?\s*$/i);
+    if (!match) {
+      return rows;
+    }
+
+    const clauses = match[1].split(',').map((clause) => {
+      const [, column, direction] = clause.trim().match(/^(\w+)\s*(ASC|DESC)?$/i) ?? [];
+      return { column, descending: (direction ?? '').toUpperCase() === 'DESC' };
+    });
+
+    return [...rows].sort((a, b) => {
+      for (const { column, descending } of clauses) {
+        if (!column) continue;
+        const left = (a as Record<string, unknown>)[column];
+        const right = (b as Record<string, unknown>)[column];
+        if (left === right) continue;
+        const comparison = (left as any) < (right as any) ? -1 : 1;
+        return descending ? -comparison : comparison;
+      }
+      return 0;
+    });
   }
 }
 
@@ -213,5 +239,18 @@ describe('AppDatabase — budgets', () => {
     await database.deleteBudget(1);
 
     expect(await database.getCachedBudgets()).toHaveLength(0);
+  });
+
+  it('getCachedBudgets returns newest-inserted-id first, matching the API ordering', async () => {
+    const database = new AppDatabase(new InMemorySqliteExecutor());
+    await database.replaceBudgets([
+      { id: 1, category_id: null, amount: 50000, period: 'monthly' },
+      { id: 2, category_id: 3, amount: 20000, period: 'monthly' },
+    ]);
+
+    const budgets = await database.getCachedBudgets();
+
+    expect(budgets[0].id).toBe(2);
+    expect(budgets[1].id).toBe(1);
   });
 });

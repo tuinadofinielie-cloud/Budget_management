@@ -133,5 +133,25 @@ describe('computeBudgetProgress', () => {
       expect(progress.percent).toBe(101);
       expect(progress.status).toBe('depassement');
     });
+
+    it('reports depassement status when the raw ratio is over budget even though percent rounds down to 100', () => {
+      const budget: AppBudget = { id: 1, categoryId: null, amount: 10000, period: 'monthly' };
+      const transactions = [makeTransaction({ id: 1, amount: 10040 })];
+
+      const progress = computeBudgetProgress(budget, transactions, referenceDate);
+
+      expect(progress.percent).toBe(100);
+      expect(progress.status).toBe('depassement');
+    });
+
+    it('reports normal status when the raw ratio is under 80% even though percent rounds up to 80', () => {
+      const budget: AppBudget = { id: 1, categoryId: null, amount: 10000, period: 'monthly' };
+      const transactions = [makeTransaction({ id: 1, amount: 7960 })];
+
+      const progress = computeBudgetProgress(budget, transactions, referenceDate);
+
+      expect(progress.percent).toBe(80);
+      expect(progress.status).toBe('normal');
+    });
   });
 });
