@@ -33,6 +33,13 @@ export interface CachedTransaction {
   date: string;
 }
 
+export interface CachedBudget {
+  id: number;
+  category_id: number | null;
+  amount: number;
+  period: string;
+}
+
 /** The minimal subset of expo-sqlite's async `SQLiteDatabase` API this class needs — kept narrow so a fake can implement it in tests without a native module. */
 export interface SqliteExecutor {
   execAsync(sql: string): Promise<void>;
@@ -75,6 +82,13 @@ CREATE TABLE IF NOT EXISTS local_transactions (
   to_account_id INTEGER,
   description TEXT,
   date TEXT NOT NULL,
+  sync_state TEXT NOT NULL DEFAULT 'synced'
+);
+CREATE TABLE IF NOT EXISTS local_budgets (
+  id INTEGER PRIMARY KEY,
+  category_id INTEGER,
+  amount INTEGER NOT NULL,
+  period TEXT NOT NULL DEFAULT 'monthly',
   sync_state TEXT NOT NULL DEFAULT 'synced'
 );
 `;
@@ -201,6 +215,37 @@ export class AppDatabase {
     await this.ready;
     return this.db.getAllAsync<CachedTransaction>(
       `SELECT id, type, amount, category_id, account_id, to_account_id, description, date FROM local_transactions ORDER BY date DESC, id DESC;`
+    );
+  }
+
+  async replaceBudgets(budgets: CachedBudget[]): Promise<void> {
+    await this.ready;
+    await this.db.runAsync(`DELETE FROM local_budgets;`);
+    for (const budget of budgets) {
+      await this.db.runAsync(
+        `INSERT OR REPLACE INTO local_budgets (id, category_id, amount, period, sync_state) VALUES (?, ?, ?, ?, 'synced');`,
+        [budget.id, budget.category_id, budget.amount, budget.period]
+      );
+    }
+  }
+
+  async upsertBudget(budget: CachedBudget): Promise<void> {
+    await this.ready;
+    await this.db.runAsync(
+      `INSERT OR REPLACE INTO local_budgets (id, category_id, amount, period, sync_state) VALUES (?, ?, ?, ?, 'synced');`,
+      [budget.id, budget.category_id, budget.amount, budget.period]
+    );
+  }
+
+  async deleteBudget(id: number): Promise<void> {
+    await this.ready;
+    await this.db.runAsync(`DELETE FROM local_budgets WHERE id = ?;`, [id]);
+  }
+
+  async getCachedBudgets(): Promise<CachedBudget[]> {
+    await this.ready;
+    return this.db.getAllAsync<CachedBudget>(
+      `SELECT id, category_id, amount, period FROM local_budgets ORDER BY id;`
     );
   }
 }

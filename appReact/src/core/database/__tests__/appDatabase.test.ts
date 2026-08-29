@@ -7,6 +7,7 @@ class InMemorySqliteExecutor implements SqliteExecutor {
     local_accounts: new Map(),
     local_categories: new Map(),
     local_transactions: new Map(),
+    local_budgets: new Map(),
   };
 
   private static COLUMNS: Record<string, string[]> = {
@@ -14,6 +15,7 @@ class InMemorySqliteExecutor implements SqliteExecutor {
     local_accounts: ['id', 'name', 'type', 'balance', 'currency'],
     local_categories: ['id', 'name', 'icon', 'color', 'type'],
     local_transactions: ['id', 'type', 'amount', 'category_id', 'account_id', 'to_account_id', 'description', 'date'],
+    local_budgets: ['id', 'category_id', 'amount', 'period'],
   };
 
   async execAsync(): Promise<void> {}
@@ -180,5 +182,36 @@ describe('AppDatabase — transactions', () => {
     await database.deleteTransaction(1);
 
     expect(await database.getCachedTransactions()).toHaveLength(0);
+  });
+});
+
+describe('AppDatabase — budgets', () => {
+  it('replaceBudgets clears and repopulates the local cache', async () => {
+    const database = new AppDatabase(new InMemorySqliteExecutor());
+
+    await database.replaceBudgets([{ id: 1, category_id: null, amount: 50000, period: 'monthly' }]);
+    await database.replaceBudgets([{ id: 2, category_id: 3, amount: 20000, period: 'monthly' }]);
+
+    const budgets = await database.getCachedBudgets();
+    expect(budgets).toHaveLength(1);
+    expect(budgets[0].category_id).toBe(3);
+  });
+
+  it('upsertBudget adds a single budget without clearing the rest', async () => {
+    const database = new AppDatabase(new InMemorySqliteExecutor());
+    await database.replaceBudgets([{ id: 1, category_id: null, amount: 50000, period: 'monthly' }]);
+
+    await database.upsertBudget({ id: 2, category_id: 3, amount: 20000, period: 'monthly' });
+
+    expect(await database.getCachedBudgets()).toHaveLength(2);
+  });
+
+  it('deleteBudget removes a single budget', async () => {
+    const database = new AppDatabase(new InMemorySqliteExecutor());
+    await database.replaceBudgets([{ id: 1, category_id: null, amount: 50000, period: 'monthly' }]);
+
+    await database.deleteBudget(1);
+
+    expect(await database.getCachedBudgets()).toHaveLength(0);
   });
 });
