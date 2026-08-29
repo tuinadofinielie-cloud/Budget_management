@@ -92,4 +92,46 @@ describe('computeBudgetProgress', () => {
     expect(progress.remaining).toBe(-2000);
     expect(progress.percent).toBe(120);
   });
+
+  describe('status boundary thresholds', () => {
+    it('reports normal status at 79% usage', () => {
+      const budget: AppBudget = { id: 1, categoryId: null, amount: 10000, period: 'monthly' };
+      const transactions = [makeTransaction({ id: 1, amount: 7900 })];
+
+      const progress = computeBudgetProgress(budget, transactions, referenceDate);
+
+      expect(progress.percent).toBe(79);
+      expect(progress.status).toBe('normal');
+    });
+
+    it('reports attention status at exactly 80% usage', () => {
+      const budget: AppBudget = { id: 1, categoryId: null, amount: 10000, period: 'monthly' };
+      const transactions = [makeTransaction({ id: 1, amount: 8000 })];
+
+      const progress = computeBudgetProgress(budget, transactions, referenceDate);
+
+      expect(progress.percent).toBe(80);
+      expect(progress.status).toBe('attention');
+    });
+
+    it('reports attention status at exactly 100% usage', () => {
+      const budget: AppBudget = { id: 1, categoryId: null, amount: 10000, period: 'monthly' };
+      const transactions = [makeTransaction({ id: 1, amount: 10000 })];
+
+      const progress = computeBudgetProgress(budget, transactions, referenceDate);
+
+      expect(progress.percent).toBe(100);
+      expect(progress.status).toBe('attention');
+    });
+
+    it('reports depassement status at 101% usage', () => {
+      const budget: AppBudget = { id: 1, categoryId: null, amount: 10000, period: 'monthly' };
+      const transactions = [makeTransaction({ id: 1, amount: 10100 })];
+
+      const progress = computeBudgetProgress(budget, transactions, referenceDate);
+
+      expect(progress.percent).toBe(101);
+      expect(progress.status).toBe('depassement');
+    });
+  });
 });
