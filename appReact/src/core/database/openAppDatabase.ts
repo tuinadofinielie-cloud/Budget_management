@@ -10,6 +10,7 @@ export async function openAppDatabase(): Promise<AppDatabase> {
       await db.runAsync(sql, params as SQLite.SQLiteBindParams);
     },
     getFirstAsync: (sql, params = []) => db.getFirstAsync(sql, params as SQLite.SQLiteBindParams),
+    getAllAsync: (sql, params = []) => db.getAllAsync(sql, params as SQLite.SQLiteBindParams),
   };
 
   return new AppDatabase(executor);
