@@ -17,6 +17,9 @@ class InMemorySqliteExecutor implements SqliteExecutor {
   async getFirstAsync<T>(): Promise<T | null> {
     return this.row as T | null;
   }
+  async getAllAsync<T>(): Promise<T[]> {
+    return this.row ? [this.row as unknown as T] : [];
+  }
 }
 
 function createMockStorage() {
