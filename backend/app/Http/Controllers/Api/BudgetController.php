@@ -16,7 +16,7 @@ class BudgetController extends Controller
 
     public function index(Request $request)
     {
-        $budgets = $request->user()->budgets()->orderByDesc('created_at')->get();
+        $budgets = $request->user()->budgets()->orderByDesc('created_at')->orderByDesc('id')->get();
 
         return $this->success(BudgetResource::collection($budgets));
     }

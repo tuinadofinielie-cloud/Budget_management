@@ -114,6 +114,27 @@ class BudgetTest extends TestCase
         $this->assertDatabaseMissing('budgets', ['id' => $budget->id]);
     }
 
+    public function test_it_ignores_attempts_to_change_category_id_and_period_on_update(): void
+    {
+        $user = User::factory()->create();
+        $otherCategory = Category::factory()->for($user)->create();
+        $budget = Budget::factory()->for($user)->create(['category_id' => null, 'amount' => 50000, 'period' => 'monthly']);
+
+        $response = $this->actingAs($user, 'sanctum')->putJson("/api/budgets/{$budget->id}", [
+            'amount' => 65000,
+            'category_id' => $otherCategory->id,
+            'period' => 'weekly',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('budgets', [
+            'id' => $budget->id,
+            'amount' => 65000,
+            'category_id' => null,
+            'period' => 'monthly',
+        ]);
+    }
+
     public function test_it_rejects_updating_another_users_budget(): void
     {
         $user = User::factory()->create();
