@@ -3,11 +3,7 @@ import { Colors } from '../../../core/theme/colors';
 import { AppTransaction } from '../../../shared/models/appTransaction';
 import { AppCategory } from '../../../shared/models/appCategory';
 import { formatMoney } from '../../../shared/utils/formatMoney';
-
-const MONTHS = [
-  'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
-  'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
-];
+import { FRENCH_MONTH_LABELS } from '../../../shared/utils/frenchMonths';
 
 function formatTransactionDate(dateIso: string): string {
   const date = new Date(dateIso);
@@ -18,7 +14,7 @@ function formatTransactionDate(dateIso: string): string {
     date.getUTCDate() === today.getUTCDate();
 
   if (isSameDay) return "Aujourd'hui";
-  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
+  return `${date.getUTCDate()} ${FRENCH_MONTH_LABELS[date.getUTCMonth()]}`;
 }
 
 interface TransactionRowProps {

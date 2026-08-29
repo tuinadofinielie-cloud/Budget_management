@@ -23,7 +23,13 @@ describe('BudgetSummary', () => {
   it('shows an empty state and triggers the action when there is no budget', async () => {
     const onCreateBudget = jest.fn();
     await render(
-      <BudgetSummary budget={null} transactions={[]} referenceDate={referenceDate} onCreateBudget={onCreateBudget} />
+      <BudgetSummary
+        budget={null}
+        transactions={[]}
+        referenceDate={referenceDate}
+        onCreateBudget={onCreateBudget}
+        onEditBudget={() => {}}
+      />
     );
 
     expect(screen.getByText('Aucun budget défini')).toBeTruthy();
@@ -31,13 +37,14 @@ describe('BudgetSummary', () => {
     expect(onCreateBudget).toHaveBeenCalledTimes(1);
   });
 
-  it('shows spent, remaining, and percent for an existing budget', async () => {
+  it('shows spent, remaining, and percent for an existing budget, and opens edit on press', async () => {
     const budget: AppBudget = { id: 1, categoryId: null, amount: 50000, period: 'monthly' };
     const transactions = [
       makeTransaction({ id: 1, amount: 5000 }),
       makeTransaction({ id: 2, amount: 8000 }),
       makeTransaction({ id: 3, amount: 2500 }),
     ];
+    const onEditBudget = jest.fn();
 
     await render(
       <BudgetSummary
@@ -45,6 +52,7 @@ describe('BudgetSummary', () => {
         transactions={transactions}
         referenceDate={referenceDate}
         onCreateBudget={() => {}}
+        onEditBudget={onEditBudget}
       />
     );
 
@@ -52,5 +60,8 @@ describe('BudgetSummary', () => {
     expect(screen.getByText('15 500 F dépensés')).toBeTruthy();
     expect(screen.getByText('34 500 F restants')).toBeTruthy();
     expect(screen.getByText('31%')).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('budget-card'));
+    expect(onEditBudget).toHaveBeenCalledTimes(1);
   });
 });

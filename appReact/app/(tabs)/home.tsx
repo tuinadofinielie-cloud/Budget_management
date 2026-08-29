@@ -103,6 +103,7 @@ export default function HomeScreen() {
           transactions={transactions}
           referenceDate={referenceDate}
           onCreateBudget={() => router.push('/set-budget')}
+          onEditBudget={() => primaryBudget && router.push(`/set-budget?id=${primaryBudget.id}`)}
         />
         <RecentTransactions transactions={transactions} categories={categories} />
       </ScrollView>
