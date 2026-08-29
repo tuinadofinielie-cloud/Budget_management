@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import { router } from 'expo-router';
 import { Colors } from '../src/core/theme/colors';
@@ -8,14 +8,20 @@ import { PrimaryButton } from '../src/shared/components/PrimaryButton';
 import { secureStorageService } from '../src/features/auth/state/authStoreInstance';
 
 const PAGES = [
-  { title: 'Prenez le contrôle de votre argent', subtitle: 'Suivez facilement vos revenus et vos dépenses.' },
+  {
+    title: 'Prenez le contrôle de votre argent',
+    subtitle: 'Suivez facilement vos revenus et vos dépenses.',
+    image: require('../assets/images/onboarding.jpg'),
+  },
   {
     title: 'Comprenez où va votre argent',
     subtitle: 'Visualisez vos habitudes de dépenses grâce à des statistiques simples.',
+    image: null,
   },
   {
     title: 'Atteignez vos objectifs',
     subtitle: 'Épargnez intelligemment et gardez toujours une longueur d’avance.',
+    image: null,
   },
 ];
 
@@ -41,7 +47,13 @@ export default function OnboardingScreen() {
       >
         {PAGES.map((item) => (
           <View key={item.title} style={styles.page}>
-            <View style={styles.illustration} />
+            {item.image ? (
+              <View style={styles.imageFrame}>
+                <Image source={item.image} style={styles.image} resizeMode="contain" />
+              </View>
+            ) : (
+              <View style={styles.illustration} />
+            )}
             <Text style={[Typography.headlineMedium, styles.title]}>{item.title}</Text>
             <Text style={[Typography.bodyLarge, styles.subtitle]}>{item.subtitle}</Text>
           </View>
@@ -90,6 +102,23 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryLight,
     opacity: 0.3,
     marginBottom: 32,
+  },
+  imageFrame: {
+    width: '78%',
+    aspectRatio: 981 / 1157,
+    maxHeight: 340,
+    borderRadius: 32,
+    overflow: 'hidden',
+    marginBottom: 32,
+    shadowColor: Colors.primary,
+    shadowOpacity: 0.25,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 8,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   title: { textAlign: 'center', marginBottom: 12 },
   subtitle: { textAlign: 'center', color: Colors.secondary },

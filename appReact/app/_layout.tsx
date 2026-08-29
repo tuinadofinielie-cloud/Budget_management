@@ -18,6 +18,8 @@ export default function RootLayout() {
       <Stack.Screen name="register" />
       <Stack.Screen name="forgot-password" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="add-transaction" options={{ presentation: 'modal', headerShown: false }} />
+      <Stack.Screen name="set-budget" options={{ presentation: 'modal', headerShown: false }} />
     </Stack>
   );
 }

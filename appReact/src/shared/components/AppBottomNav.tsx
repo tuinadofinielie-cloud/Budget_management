@@ -1,5 +1,6 @@
 import { View, Pressable, Text, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Colors } from '../../core/theme/colors';
 import { glassSurfaceStyle } from '../../core/theme/glass';
@@ -37,10 +38,10 @@ export function AppBottomNav({ state, navigation }: BottomTabBarProps) {
       <Pressable
         style={styles.fab}
         onPress={() =>
-          Alert.alert('Actions rapides', 'Dépense / Revenu / Transfert', [
-            { text: 'Dépense', onPress: () => Alert.alert('Bientôt disponible', 'Disponible dans une prochaine phase.') },
-            { text: 'Revenu', onPress: () => Alert.alert('Bientôt disponible', 'Disponible dans une prochaine phase.') },
-            { text: 'Transfert', onPress: () => Alert.alert('Bientôt disponible', 'Disponible dans une prochaine phase.') },
+          Alert.alert('Actions rapides', 'Que voulez-vous ajouter ?', [
+            { text: 'Dépense', onPress: () => router.push('/add-transaction?type=expense') },
+            { text: 'Revenu', onPress: () => router.push('/add-transaction?type=income') },
+            { text: 'Transfert', onPress: () => router.push('/add-transaction?type=transfer') },
             { text: 'Annuler', style: 'cancel' },
           ])
         }

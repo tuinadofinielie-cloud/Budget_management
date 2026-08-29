@@ -10,7 +10,7 @@ export interface BudgetProgress {
   status: BudgetStatus;
 }
 
-function isSameMonth(dateIso: string, reference: Date): boolean {
+export function isSameMonth(dateIso: string, reference: Date): boolean {
   const date = new Date(dateIso);
   return date.getUTCFullYear() === reference.getUTCFullYear() && date.getUTCMonth() === reference.getUTCMonth();
 }
