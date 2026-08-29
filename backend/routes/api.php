@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\TransactionController;
@@ -21,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::apiResource('accounts', AccountController::class)->except(['show']);
+    Route::apiResource('budgets', BudgetController::class)->except(['show']);
     Route::get('categories', [CategoryController::class, 'index']);
     Route::apiResource('transactions', TransactionController::class);
 });
