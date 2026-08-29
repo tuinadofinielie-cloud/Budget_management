@@ -13,6 +13,7 @@ export interface AuthState {
   register: (params: { name: string; email: string; password: string; passwordConfirmation: string }) => Promise<void>;
   login: (params: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -62,6 +63,17 @@ export function createAuthStore(repository: AuthRepository): UseBoundStore<Store
     logout: async () => {
       await repository.logout();
       set({ status: 'unauthenticated', user: null });
+    },
+
+    forgotPassword: async (email) => {
+      set({ isSubmitting: true, error: null });
+      try {
+        await repository.forgotPassword(email);
+        set({ isSubmitting: false });
+      } catch (err) {
+        set({ isSubmitting: false, error: err instanceof Error ? err.message : 'Une erreur est survenue.' });
+        throw err;
+      }
     },
 
     clearError: () => set({ error: null }),
