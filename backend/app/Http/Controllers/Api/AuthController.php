@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\DefaultCategorySeeder;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +17,7 @@ class AuthController extends Controller
 {
     use ApiResponse;
 
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request, DefaultCategorySeeder $categorySeeder)
     {
         $user = User::create([
             'name' => $request->validated('name'),
@@ -24,6 +25,8 @@ class AuthController extends Controller
             'password' => Hash::make($request->validated('password')),
             'currency' => 'XOF',
         ]);
+
+        $categorySeeder->seedFor($user);
 
         $token = $user->createToken('mobile')->plainTextToken;
 
