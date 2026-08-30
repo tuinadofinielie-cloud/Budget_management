@@ -2,17 +2,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '../../../shared/components/GlassCard';
 import { Colors } from '../../../core/theme/colors';
-import { AppAccount, AccountType, ACCOUNT_TYPE_LABELS } from '../../../shared/models/appAccount';
+import { AppAccount, ACCOUNT_TYPE_LABELS } from '../../../shared/models/appAccount';
+import { ACCOUNT_TYPE_ICONS } from '../../accounts/constants';
 import { formatMoney } from '../../../shared/utils/formatMoney';
-
-const ACCOUNT_ICONS: Record<AccountType, keyof typeof Ionicons.glyphMap> = {
-  cash: 'cash-outline',
-  orange_money: 'phone-portrait-outline',
-  moov_money: 'phone-portrait-outline',
-  bank: 'business-outline',
-  card: 'card-outline',
-  other: 'wallet-outline',
-};
 
 interface AccountCardProps {
   account: AppAccount;
@@ -22,7 +14,7 @@ export function AccountCard({ account }: AccountCardProps) {
   return (
     <GlassCard radius={20} style={styles.card}>
       <View style={styles.iconCircle}>
-        <Ionicons name={ACCOUNT_ICONS[account.type]} size={18} color={Colors.primary} />
+        <Ionicons name={ACCOUNT_TYPE_ICONS[account.type]} size={18} color={Colors.primary} />
       </View>
       <Text style={styles.name} numberOfLines={1}>
         {account.name}

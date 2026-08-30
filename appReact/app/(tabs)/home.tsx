@@ -97,7 +97,11 @@ export default function HomeScreen() {
         <HomeHeader name={user?.name ?? ''} avatar={user?.avatar ?? null} />
         <BalanceHero totalBalance={totalBalance} income={income} expense={expense} />
         <QuickActions />
-        <AccountsSection accounts={accounts} onCreateAccount={() => router.push('/create-account')} />
+        <AccountsSection
+          accounts={accounts}
+          onCreateAccount={() => router.push('/create-account')}
+          onManageAccounts={() => router.push('/accounts')}
+        />
         <BudgetSummary
           budget={primaryBudget}
           transactions={transactions}

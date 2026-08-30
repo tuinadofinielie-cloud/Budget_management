@@ -8,16 +8,20 @@ const accounts: AppAccount[] = [
 ];
 
 describe('AccountsSection', () => {
-  it('renders a card per account', async () => {
-    await render(<AccountsSection accounts={accounts} onCreateAccount={() => {}} />);
+  it('renders a card per account and a manage link', async () => {
+    const onManageAccounts = jest.fn();
+    await render(<AccountsSection accounts={accounts} onCreateAccount={() => {}} onManageAccounts={onManageAccounts} />);
 
     expect(screen.getByText('Cash')).toBeTruthy();
     expect(screen.getByText('Compte principal')).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('Gérer'));
+    expect(onManageAccounts).toHaveBeenCalledTimes(1);
   });
 
   it('shows an empty state with a create-account action when there are no accounts', async () => {
     const onCreateAccount = jest.fn();
-    await render(<AccountsSection accounts={[]} onCreateAccount={onCreateAccount} />);
+    await render(<AccountsSection accounts={[]} onCreateAccount={onCreateAccount} onManageAccounts={() => {}} />);
 
     expect(screen.getByText('Aucun compte')).toBeTruthy();
     await fireEvent.press(screen.getByText('Créer un compte'));

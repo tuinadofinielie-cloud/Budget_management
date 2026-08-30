@@ -1,25 +1,33 @@
 import { useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Alert, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Colors } from '../src/core/theme/colors';
 import { Typography } from '../src/core/theme/typography';
 import { AppTextField } from '../src/shared/components/AppTextField';
 import { PrimaryButton } from '../src/shared/components/PrimaryButton';
 import { useAccountsStore } from '../src/features/accounts/state/accountsStoreInstance';
 import { AccountType, ACCOUNT_TYPE_LABELS } from '../src/shared/models/appAccount';
-
-const ACCOUNT_TYPES: AccountType[] = ['cash', 'orange_money', 'moov_money', 'bank', 'card', 'other'];
+import { ACCOUNT_TYPES } from '../src/features/accounts/constants';
 
 export default function CreateAccountScreen() {
+  const params = useLocalSearchParams<{ id?: string }>();
+  const accountId = params.id ? Number(params.id) : null;
+
+  const accounts = useAccountsStore((state) => state.accounts);
   const create = useAccountsStore((state) => state.create);
+  const update = useAccountsStore((state) => state.update);
+  const remove = useAccountsStore((state) => state.remove);
   const isSubmitting = useAccountsStore((state) => state.isSubmitting);
   const error = useAccountsStore((state) => state.error);
   const clearError = useAccountsStore((state) => state.clearError);
 
-  const [name, setName] = useState('');
-  const [type, setType] = useState<AccountType>('cash');
+  const existingAccount = accountId ? (accounts.find((account) => account.id === accountId) ?? null) : null;
+  const isEditing = !!existingAccount;
+
+  const [name, setName] = useState(existingAccount?.name ?? '');
+  const [type, setType] = useState<AccountType>(existingAccount?.type ?? 'cash');
   const [balance, setBalance] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -32,24 +40,48 @@ export default function CreateAccountScreen() {
       return;
     }
 
-    const parsedBalance = balance.trim() ? Number(balance.replace(',', '.')) : 0;
-    if (Number.isNaN(parsedBalance) || parsedBalance < 0) {
-      setFormError('Le solde initial doit être un nombre positif.');
-      return;
-    }
-
     try {
-      await create({ name: name.trim(), type, balance: Math.round(parsedBalance) });
+      if (existingAccount) {
+        await update(existingAccount.id, { name: name.trim(), type });
+      } else {
+        const parsedBalance = balance.trim() ? Number(balance.replace(',', '.')) : 0;
+        if (Number.isNaN(parsedBalance) || parsedBalance < 0) {
+          setFormError('Le solde initial doit être un nombre positif.');
+          return;
+        }
+        await create({ name: name.trim(), type, balance: Math.round(parsedBalance) });
+      }
       router.back();
     } catch {
       // error already surfaced via the store's `error` field
     }
   }
 
+  function handleDelete() {
+    if (!existingAccount) return;
+    Alert.alert('Supprimer ce compte ?', `"${existingAccount.name}" sera définitivement supprimé.`, [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Supprimer',
+        style: 'destructive',
+        onPress: async () => {
+          clearError();
+          try {
+            await remove(existingAccount.id);
+            router.back();
+          } catch {
+            const message = useAccountsStore.getState().error ?? 'Impossible de supprimer ce compte.';
+            Alert.alert('Suppression impossible', message);
+          }
+        },
+      },
+    ]);
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={Typography.titleLarge}>Créer un compte</Text>
+        <Text style={Typography.titleLarge}>{isEditing ? 'Modifier le compte' : 'Créer un compte'}</Text>
         <Pressable onPress={() => router.back()} accessibilityLabel="Fermer">
           <Ionicons name="close" size={24} color={Colors.text} />
         </Pressable>
@@ -83,11 +115,19 @@ export default function CreateAccountScreen() {
           })}
         </View>
 
-        <AppTextField label="Solde initial (F, optionnel)" value={balance} onChangeText={setBalance} keyboardType="numeric" />
+        {!isEditing && (
+          <AppTextField label="Solde initial (F, optionnel)" value={balance} onChangeText={setBalance} keyboardType="numeric" />
+        )}
 
         {(formError || error) && <Text style={styles.error}>{formError ?? error}</Text>}
 
-        <PrimaryButton label="Créer le compte" onPress={handleSubmit} isLoading={isSubmitting} />
+        <PrimaryButton label={isEditing ? 'Enregistrer' : 'Créer le compte'} onPress={handleSubmit} isLoading={isSubmitting} />
+
+        {isEditing && (
+          <Pressable style={styles.deleteButton} onPress={handleDelete}>
+            <Text style={styles.deleteLabel}>Supprimer ce compte</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -141,5 +181,15 @@ const styles = StyleSheet.create({
   error: {
     color: Colors.danger,
     marginBottom: 16,
+  },
+  deleteButton: {
+    marginTop: 16,
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  deleteLabel: {
+    color: Colors.danger,
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

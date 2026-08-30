@@ -55,6 +55,21 @@ describe('accountsStore', () => {
     expect(store.getState().isSubmitting).toBe(false);
   });
 
+  it('update replaces the matching account', async () => {
+    const updated: AppAccount = { ...account, name: 'Cash renommé' };
+    const repository = makeRepository({
+      getCached: jest.fn().mockResolvedValue([account]),
+      update: jest.fn().mockResolvedValue(updated),
+    });
+    const store = createAccountsStore(repository);
+    await store.getState().loadCached();
+
+    await store.getState().update(account.id, { name: 'Cash renommé' });
+
+    expect(store.getState().accounts).toEqual([updated]);
+    expect(store.getState().isSubmitting).toBe(false);
+  });
+
   it('remove drops the account from state', async () => {
     const repository = makeRepository({
       getCached: jest.fn().mockResolvedValue([account]),
@@ -66,5 +81,19 @@ describe('accountsStore', () => {
     await store.getState().remove(account.id);
 
     expect(store.getState().accounts).toEqual([]);
+  });
+
+  it('remove keeps the account and surfaces an error when the repository rejects it', async () => {
+    const repository = makeRepository({
+      getCached: jest.fn().mockResolvedValue([account]),
+      remove: jest.fn().mockRejectedValue(new Error('Ce compte a des transactions associées et ne peut pas être supprimé.')),
+    });
+    const store = createAccountsStore(repository);
+    await store.getState().loadCached();
+
+    await expect(store.getState().remove(account.id)).rejects.toThrow();
+
+    expect(store.getState().accounts).toEqual([account]);
+    expect(store.getState().error).toBe('Ce compte a des transactions associées et ne peut pas être supprimé.');
   });
 });
