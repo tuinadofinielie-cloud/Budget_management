@@ -3,3 +3,4 @@ android
 ios
 *.log
 .expo
+node_modules
