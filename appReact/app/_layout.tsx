@@ -20,6 +20,7 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="add-transaction" options={{ presentation: 'modal', headerShown: false }} />
       <Stack.Screen name="set-budget" options={{ presentation: 'modal', headerShown: false }} />
+      <Stack.Screen name="create-account" options={{ presentation: 'modal', headerShown: false }} />
     </Stack>
   );
 }

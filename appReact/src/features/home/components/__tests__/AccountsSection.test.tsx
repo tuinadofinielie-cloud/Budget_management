@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 import { AccountsSection } from '../AccountsSection';
 import { AppAccount } from '../../../../shared/models/appAccount';
 
@@ -9,15 +9,18 @@ const accounts: AppAccount[] = [
 
 describe('AccountsSection', () => {
   it('renders a card per account', async () => {
-    await render(<AccountsSection accounts={accounts} />);
+    await render(<AccountsSection accounts={accounts} onCreateAccount={() => {}} />);
 
     expect(screen.getByText('Cash')).toBeTruthy();
     expect(screen.getByText('Compte principal')).toBeTruthy();
   });
 
-  it('shows an empty state when there are no accounts', async () => {
-    await render(<AccountsSection accounts={[]} />);
+  it('shows an empty state with a create-account action when there are no accounts', async () => {
+    const onCreateAccount = jest.fn();
+    await render(<AccountsSection accounts={[]} onCreateAccount={onCreateAccount} />);
 
     expect(screen.getByText('Aucun compte')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Créer un compte'));
+    expect(onCreateAccount).toHaveBeenCalledTimes(1);
   });
 });

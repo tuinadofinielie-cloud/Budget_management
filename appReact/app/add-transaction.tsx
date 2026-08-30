@@ -7,6 +7,7 @@ import { Colors } from '../src/core/theme/colors';
 import { Typography } from '../src/core/theme/typography';
 import { AppTextField } from '../src/shared/components/AppTextField';
 import { PrimaryButton } from '../src/shared/components/PrimaryButton';
+import { EmptyState } from '../src/shared/components/EmptyState';
 import { useAccountsStore } from '../src/features/accounts/state/accountsStoreInstance';
 import { useCategoriesStore } from '../src/features/categories/state/categoriesStoreInstance';
 import { useTransactionsStore } from '../src/features/transactions/state/transactionsStoreInstance';
@@ -93,6 +94,27 @@ export default function AddTransactionScreen() {
     }
   }
 
+  if (accounts.length === 0) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <Text style={Typography.titleLarge}>{TITLES[type]}</Text>
+          <Pressable onPress={() => router.back()} accessibilityLabel="Fermer">
+            <Ionicons name="close" size={24} color={Colors.text} />
+          </Pressable>
+        </View>
+        <View style={styles.emptyWrap}>
+          <EmptyState
+            title="Aucun compte pour le moment"
+            message="Chaque transaction doit être rattachée à un compte pour que votre solde soit calculé correctement. Créez d'abord un compte."
+            actionLabel="Créer un compte"
+            onAction={() => router.push('/create-account')}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -113,16 +135,12 @@ export default function AddTransactionScreen() {
           keyboardType="numeric"
         />
 
-        {accounts.length === 0 ? (
-          <Text style={styles.hint}>Aucun compte disponible.</Text>
-        ) : (
-          <AccountPicker
-            label={type === 'transfer' ? 'Depuis' : 'Compte'}
-            accounts={accounts}
-            selectedId={accountId}
-            onSelect={setAccountId}
-          />
-        )}
+        <AccountPicker
+          label={type === 'transfer' ? 'Depuis' : 'Compte'}
+          accounts={accounts}
+          selectedId={accountId}
+          onSelect={setAccountId}
+        />
 
         {type === 'transfer' ? (
           <AccountPicker label="Vers" accounts={otherAccounts} selectedId={toAccountId} onSelect={setToAccountId} />
@@ -158,9 +176,10 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     gap: 4,
   },
-  hint: {
-    color: Colors.secondary,
-    marginBottom: 16,
+  emptyWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   error: {
     color: Colors.danger,

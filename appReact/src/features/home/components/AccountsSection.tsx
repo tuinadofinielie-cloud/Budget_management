@@ -6,14 +6,20 @@ import { AccountCard } from './AccountCard';
 
 interface AccountsSectionProps {
   accounts: AppAccount[];
+  onCreateAccount: () => void;
 }
 
-export function AccountsSection({ accounts }: AccountsSectionProps) {
+export function AccountsSection({ accounts, onCreateAccount }: AccountsSectionProps) {
   return (
     <View>
       <Text style={[Typography.titleLarge, styles.title]}>Comptes</Text>
       {accounts.length === 0 ? (
-        <EmptyState title="Aucun compte" message="Ajoutez un compte pour voir vos soldes ici." />
+        <EmptyState
+          title="Aucun compte"
+          message="Ajoutez un compte pour voir vos soldes ici."
+          actionLabel="Créer un compte"
+          onAction={onCreateAccount}
+        />
       ) : (
         <ScrollView
           horizontal
