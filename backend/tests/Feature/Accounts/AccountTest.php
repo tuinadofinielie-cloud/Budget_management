@@ -106,4 +106,34 @@ class AccountTest extends TestCase
         $response->assertStatus(422);
         $this->assertDatabaseHas('accounts', ['id' => $account->id]);
     }
+
+    public function test_it_rejects_deleting_another_users_account(): void
+    {
+        $user = User::factory()->create();
+        $otherAccount = Account::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')->deleteJson("/api/accounts/{$otherAccount->id}");
+
+        $response->assertStatus(404);
+        $this->assertDatabaseHas('accounts', ['id' => $otherAccount->id]);
+    }
+
+    public function test_it_rejects_deleting_an_account_that_is_the_destination_of_a_transfer(): void
+    {
+        $user = User::factory()->create();
+        $source = Account::factory()->for($user)->create();
+        $destination = Account::factory()->for($user)->create();
+        $source->transactions()->create([
+            'user_id' => $user->id,
+            'type' => 'transfer',
+            'amount' => 5000,
+            'to_account_id' => $destination->id,
+            'date' => now(),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')->deleteJson("/api/accounts/{$destination->id}");
+
+        $response->assertStatus(422);
+        $this->assertDatabaseHas('accounts', ['id' => $destination->id]);
+    }
 }
