@@ -31,6 +31,7 @@ export default function AddTransactionScreen() {
     params.type === 'income' || params.type === 'transfer' ? params.type : 'expense';
 
   const accounts = useAccountsStore((state) => state.accounts);
+  const refreshAccounts = useAccountsStore((state) => state.refresh);
   const categories = useCategoriesStore((state) => state.categories);
   const create = useTransactionsStore((state) => state.create);
   const isSubmitting = useTransactionsStore((state) => state.isSubmitting);
@@ -83,6 +84,9 @@ export default function AddTransactionScreen() {
         description: description.trim() || null,
         date: todayIso(),
       });
+      // A transaction changes account balances server-side; refresh so Home/Budget/Statistics
+      // reflect the new balance immediately instead of waiting for the next pull-to-refresh.
+      refreshAccounts().catch(() => {});
       router.back();
     } catch {
       // error already surfaced via the store's `error` field
